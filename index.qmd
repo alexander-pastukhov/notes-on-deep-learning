@@ -1,0 +1,4 @@
+# Preface {.unnumbered}
+
+These are companion notes for a deep learning seminar.
+

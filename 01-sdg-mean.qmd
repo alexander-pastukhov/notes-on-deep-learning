@@ -1,0 +1,81 @@
+# Stochastic Gradient Descent for a mean
+
+As a first example, we will use stochastic gradient descent (SDG) to estimate the mean of a set of values. 
+
+## Generate normally distributed data
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+
+set.seed(128230565)
+n <- 30
+normal_df <- tibble(`data point index` = 1:n,
+                    y = rnorm(n, mean = 0, sd = 1))
+
+means_df <- tibble(the_mean = c(0, mean(normal_df$y)),
+                   "Kind of mean" = c("True mean", "Sample mean"))
+  
+ggplot(data = normal_df, aes(x = y)) +
+  geom_histogram(bins = 10) +
+  geom_vline(data = means_df, aes(xintercept = the_mean, color = `Kind of mean`))
+```
+
+To visualize our stochastic gradient descent, it is better to plot each data point as a point and our means as horizontal lines. Note, that this is just a different representation and x-axis has no meaning beyond spreading the dots horizontally.
+
+```{r}
+ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+  geom_point() +
+  geom_hline(data = means_df, aes(yintercept = the_mean, color = `Kind of mean`))
+```
+## SDG
+
+
+```{r}
+# generate a random initial guess about the mean
+set.seed(873917234)
+current_guess_at_mean <- rnorm(1, sd = 3)
+
+# pick a random data point
+ipick <- sample(1:nrow(normal_df), 1)
+
+# flag it as a current point of interest (even if it is not an interesting point)
+normal_df <- 
+  normal_df %>%
+  mutate(`Is Point of Interest` = factor(1:n() == ipick, levels = c(TRUE, FALSE)))
+
+ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+  geom_hline(aes(yintercept = mean(.data$y)), color = "black") +
+  geom_hline(yintercept = current_guess_at_mean, color = "orange") +
+  geom_point() +
+  geom_point(aes(x = .data[['data point index']][ipick], y = .data[['y']][ipick]), color = "red") +
+  geom_segment(aes(x = .data[["data point index"]][ipick], y = current_guess_at_mean,
+                   xend = .data[["data point index"]][ipick], yend = .data[['y']][ipick]),  arrow = arrow(length = unit(0.03, "npc"))) +
+  ylim(-4, 1.5)
+```
+
+
+```{r}
+library(ggplot2)
+library(gganimate)
+
+ggplot(mtcars, aes(factor(cyl), mpg)) + 
+  geom_boxplot() + 
+  # Here comes the gganimate code
+  transition_states(
+    gear,
+    transition_length = 2,
+    state_length = 1
+  ) +
+  enter_fade() + 
+  exit_shrink() +
+  ease_aes('sine-in-out')
+
+
+```
+
+
+
+
+
