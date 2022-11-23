@@ -1,6 +1,6 @@
 project:
-  type: book
-
+  type: website
+  output-dir: docs
 book:
   title: "Notes on Deep Learning"
   author: "Alexander (Sasha) Pastukhov"
