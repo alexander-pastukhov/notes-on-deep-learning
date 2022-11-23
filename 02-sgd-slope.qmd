@@ -210,4 +210,4 @@ for(epoch in 1:epochs_n){
 video_file <- fs::path('videos', 'finding-slope-via-sgd.mp4')
 av::av_capture_graphics(generate_sdg_plots(30), video_file, 1280, 720, res = 144, framerate=15)
 ```
-{{< video videos/finding-mean-via-sgd.mp4 >}}
+{{< video videos/finding-slope-via-sgd.mp4 >}}
