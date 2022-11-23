@@ -1,0 +1,180 @@
+# Visualizing Minibatch Stochastic Gradient Descent for slope
+
+
+## Generate data distributed normally relative to the slope
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+
+set.seed(128230565)
+x_range <- c(-15, 14)
+slope <- 3
+slope_df <-
+  tibble(x = x_range[1]:x_range[2]) %>%
+  mutate(y = rnorm(n(), mean = x * slope, sd = 10))
+```
+
+Here is the dependence visualized with the blue line representing a true slope and the red line --- the sample slope.
+```{r}
+#| echo: false
+sample_slope <- coef(lm(y ~ x - 1, slope_df))[1]
+
+ggplot(slope_df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_abline(slope = slope, color = "blue", intercept = 0) +
+  geom_abline(slope = sample_slope, color = "red", intercept = 0)
+```
+
+## SDG step by step
+First, we make a random guess about the slope.
+```{r}
+# generate a random initial guess about the mean
+set.seed(8739172)
+current_guess_at_slope <- rnorm(1, sd = 10)
+```
+
+It is visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.
+```{r}
+#| echo: false
+ggplot(slope_df, aes(x = x, y = y)) +
+  geom_point() +
+  geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+  geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0)
+```
+
+Next we pick a first batch of 5 points and compute difference between it and our guess about the mean.
+```{r}
+# pick a random data point
+batch_size <- 5
+ipick <- 1:5
+
+# that's our neural network
+prediction <- current_guess_at_slope * slope_df[['x']][ipick] 
+
+# computing squared error and difference
+error <- (prediction - slope_df[['y']][ipick])^2
+delta <- prediction - slope_df[['y']][ipick]
+```
+
+The difference and the direction in which we need to adjust our guess are depicted as the arrow.
+```{r}
+#| echo: false
+ggplot(slope_df, aes(x = x, y = y)) +
+  geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+  geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
+  geom_point()  +
+  geom_point(data =  slope_df[ipick, ], color = "red") +
+  geom_curve(data = NULL, x = mean(slope_df[['x']][ipick]), y = mean(prediction), xend = mean(slope_df[['x']][ipick]), yend = mean(slope_df[['y']][ipick]), curvature = 0.1, arrow = arrow(length = unit(0.03, "npc")))
+```
+Finally, we move our guess by a small amount to minimize the error.
+```{r}
+#| echo: false
+# we save this behind the scenes only for comparison plotting 
+previous_guess <- current_guess_at_slope
+```
+```{r}
+alpha <- 0.001 / batch_size # we need a smaller step as it reflects delta * input accumulated over batch_size points
+current_guess_at_slope <- current_guess_at_slope - alpha * sum(delta * slope_df[['x']][ipick])
+```
+
+Here, the old guess is marked by a dashed line. Our step is probably too big but here I made `alpha` largish to make seeing the difference easier.
+```{r}
+#| echo: false
+ggplot(slope_df, aes(x = x, y = y)) +
+  geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+  geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
+  geom_abline(slope = previous_guess, color = "orange", intercept = 0, linetype = "dashed") +
+  geom_point() +
+  geom_point(data = slope_df[ipick, ], color = "red")
+```
+
+## SDG over all points and many epochs
+```{r}
+#| eval: false
+
+# mini batch size
+batch_size <- 5
+batches_n <- nrow(slope_df) / batch_size
+
+# learning rate
+alpha <- 0.0001  # we need a smaller step as it reflects delta * input accumulated over batch_size points
+
+# generate a random initial guess about the mean
+set.seed(8739172)
+current_guess_at_slope <- rnorm(1, sd = 10)
+
+for(epoch in 1:30){
+  total_error <- 0
+  for(ibatch in 1:batches_n){
+    ipick <- ((ibatch - 1) * batch_size + 1) : (ibatch * batch_size)
+  
+    # computing squared error and difference
+    prediction <- current_guess_at_slope * slope_df[['x']][ipick]
+    error <- (prediction - slope_df[['y']][ipick])^2
+    total_error <- total_error + sum(error)
+    delta <- prediction - slope_df[['y']][ipick]
+    
+    # adjusting our guess
+    current_guess_at_slope <- current_guess_at_slope - alpha * sum(delta * slope_df[['x']][ipick])
+  }
+  # computing and reporting error
+  cat(glue::glue("Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample slope: {round(sample_slope, 2)}"), "\n")
+}
+```
+```{r}
+#| eval: false
+#| echo: false
+#| message: false
+#| warning: false
+library(av)
+
+generate_sdg_plots <- function(epochs_n = 1){
+  # learning rate
+  alpha <- 0.0001
+  
+  # mini batch size
+  batch_size <- 5
+  batches_n <- nrow(slope_df) / batch_size
+
+  # generate a random initial guess about the mean
+  set.seed(8739172)
+  current_guess_at_slope <- rnorm(1, sd = 10)
+  
+  for(epoch in 1:epochs_n){
+    total_error <- 0
+    for(ibatch in 1:batches_n){
+        ipick <- ((ibatch - 1) * batch_size + 1) : (ibatch * batch_size)
+      
+        # computing squared error and difference
+        prediction <- current_guess_at_slope * slope_df[['x']][ipick]
+        error <- (prediction - slope_df[['y']][ipick])^2
+        delta <- prediction - slope_df[['y']][ipick]
+        
+        total_prediction <- current_guess_at_slope * slope_df[['x']]
+        total_error <- sum((total_prediction - slope_df[['y']])^2)
+        
+        # adjusting our guess
+        current_guess_at_slope <- current_guess_at_slope - alpha * sum(delta * slope_df[['x']][ipick])
+        
+        dot_curvature <- - 0.1 * sign(delta * slope_df[['x']][ipick])
+        slope_plot <- 
+          ggplot(slope_df, aes(x = x, y = y)) +
+          geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+          geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
+          geom_point() +
+          geom_point(data = slope_df[ipick, ], color = "red") +
+          geom_curve(data = NULL, x = mean(slope_df[['x']][ipick]), y = current_guess_at_slope * mean(slope_df[['x']][ipick]), xend = mean(slope_df[['x']][ipick]), yend = mean(slope_df[['y']][ipick]), curvature = dot_curvature, arrow = arrow(length = unit(0.03, "npc"))) +
+          labs(subtitle = glue::glue("Epoch/Batch: {epoch}/{ibatch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample mean: {round(sample_slope, 2)}"))
+        
+        print(slope_plot)
+    }
+  }
+}
+
+video_file <- fs::path('videos', 'finding-slope-via-minibatch-sgd.mp4')
+av::av_capture_graphics(generate_sdg_plots(30), video_file, 1280, 720, res = 144, framerate=5)
+```
+
+{{< video videos/finding-slope-via-minibatch-sgd.mp4 >}}
