@@ -158,7 +158,7 @@ generate_sdg_plots <- function(epochs_n = 1){
         # adjusting our guess
         current_guess_at_slope <- current_guess_at_slope - alpha * sum(delta * slope_df[['x']][ipick])
         
-        dot_curvature <- - 0.1 * sign(delta * slope_df[['x']][ipick])
+        dot_curvature <- -0.1 * sign(sum(delta * slope_df[['x']][ipick]))
         slope_plot <- 
           ggplot(slope_df, aes(x = x, y = y)) +
           geom_abline(slope = sample_slope, color = "black", intercept = 0) +
