@@ -42,7 +42,7 @@ set.seed(873917234)
 current_guess_at_mean <- rnorm(1, sd = 3)
 ```
 
-In  visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.
+It is visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.
 ```{r}
 #| echo: false
 ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
@@ -74,6 +74,7 @@ ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
                    xend = .data[["data point index"]][ipick], yend = .data[['y']][ipick]),  arrow = arrow(length = unit(0.03, "npc"))) +
   ylim(-4, 1.5)
 ```
+
 Finally, we move our guess by a small amount to minimize the error
 ```{r}
 #| echo: false
@@ -85,7 +86,7 @@ alpha <- 0.05
 current_guess_at_mean <- current_guess_at_mean - alpha * delta
 ```
 
-Here, the old guess is marked by a dashed line. Our step is probably too big but here I made `alpha` largish to make seeing the differnce easier.
+Here, the old guess is marked by a dashed line. Our step is probably too big but here I made `alpha` largish to make seeing the difference easier.
 ```{r}
 #| echo: false
 ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
@@ -132,7 +133,6 @@ for(epoch in 1:50){
 #| warning: false
 
 library(av)
-library(progress)
 
 generate_sdg_plots <- function(epochs_n = 1){
   # learning rate
@@ -142,12 +142,10 @@ generate_sdg_plots <- function(epochs_n = 1){
   set.seed(873917234)
   current_guess_at_mean <- rnorm(1, sd = 3)
   
-  pbar <- progress::progress_bar$new(format = "[:bar] :eta", total = epochs_n * nrow(normal_df))
   for(epoch in 1:epochs_n){
     total_error <- 0
     for(ipick in 1:nrow(normal_df)){
-      pbar$tick()
-      
+
       # computing squared error and difference
       error <- (current_guess_at_mean - normal_df[['y']][ipick])^2
       total_error <- sum((current_guess_at_mean - normal_df[['y']])^2)

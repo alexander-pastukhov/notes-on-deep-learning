@@ -30,11 +30,17 @@ ggplot(slope_df, aes(x = x, y = y)) +
 ## Direction of adjusment based on difference and input
 
 ```{r}
-condition <- c("Slope too high, positive input", "Slope too low, positive input",
-               "Slope too high, negative input", "Slope too low, negative input")
+#| echo: false
+library(patchwork)
+
+conditions <- c("Slope too high\nNegative input (-) * positive delta (+)\nReduce weight (-)",
+                "Slope too high\nPositive input (+) * negative delta (-)\nReduce weight (-)",
+                "Slope too low\nPositive input (+) * positive delta (+)\nIncrease weight (+)",
+               "Slope too low\nNegative input (-) * negative delta (-)\nIncrease weight (+)")
 
 example_slope <- tibble(Slope = sample_slope + 10 * c(1, -1, 1, -1),
-                        Condition = condition) 
+                        Condition = conditions) 
+
 example_slope_lines <-
   example_slope %>%
   group_by(Condition) %>%
@@ -43,20 +49,25 @@ example_slope_lines <-
             .groups = "drop")
 
 example_point <-
-  tibble(Condition = condition,
-         Curvature = 0.5 * c(-1, 1, -1, -1),
+  tibble(Condition = conditions,
+         Curvature = 0.5 * c(-1, 1, -1, 1),
          x = slope_df[['x']][c(25, 25, 5, 5)],
          y = slope_df[['x']][c(25, 25, 5, 5)]) %>%
   mutate(ypred = x * example_slope[['Slope']])
 
+example_plots <- list()
+for(iC in 1:length(conditions)){
+  example_plots[[iC]] <-
+    ggplot(data = filter(example_slope_lines, Condition == conditions[iC]), aes(x = x, y = y)) +
+    geom_line(color = "orange") +
+    geom_point(data = slope_df, aes(x = x, y = y)) +
+    geom_point(data = filter(example_point, Condition == conditions[iC]), color = "red") +
+    geom_curve(data = filter(example_point, Condition == conditions[iC]), aes(x = x, y = ypred, xend = x, yend = y),
+               curvature = filter(example_point, Condition == conditions[iC])[['Curvature']][1], arrow = arrow(length = unit(0.03, "npc"))) +
+    labs(subtitle = conditions[iC])
+}
 
-
-ggplot(data = example_slope_lines, aes(x = x, y = y)) +
-  geom_line(color = "orange") +
-  geom_point(data = slope_df, aes(x = x, y = y)) +
-  geom_point(data = example_point, color = "red") +
-  geom_curve(data = example_point, aes(x = x, y = ypred, xend = x, yend = y),  curvature = -0.5, arrow = arrow(length = unit(0.03, "npc"))) +
-  facet_wrap(.~Condition, ncol = 2)
+(example_plots[[1]] + example_plots[[2]])  / (example_plots[[3]] + example_plots[[4]])
 ```
 
 
@@ -65,15 +76,138 @@ ggplot(data = example_slope_lines, aes(x = x, y = y)) +
 First, we make a random guess about the slope.
 ```{r}
 # generate a random initial guess about the mean
-set.seed(87391724)
+set.seed(8739172)
 current_guess_at_slope <- rnorm(1, sd = 10)
 ```
 
+It is visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.
 ```{r}
 #| echo: false
-
 ggplot(slope_df, aes(x = x, y = y)) +
   geom_point() +
   geom_abline(slope = sample_slope, color = "black", intercept = 0) +
   geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0)
 ```
+
+Next we pick a first (or, it could be random) data point and compute difference between it and our guess about the mean.
+```{r}
+# pick a random data point
+ipick <- 1
+
+# computing squared error and difference
+prediction <- current_guess_at_slope * slope_df[['x']][ipick]
+error <- (prediction - slope_df[['y']][ipick])^2
+delta <- prediction - slope_df[['y']][ipick]
+```
+
+The difference and the direction in which we need to adjust our guess are depicted as the arrow.
+```{r}
+#| echo: false
+dot_curvature <- - 0.1 * sign(delta * slope_df[['x']][ipick])
+ggplot(slope_df, aes(x = x, y = y)) +
+  geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+  geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
+  geom_point() +
+  geom_point(aes(x = .data[['x']][ipick], y = .data[['y']][ipick]), color = "red") +
+  geom_curve(aes(x = .data[['x']][ipick], y = prediction, xend = .data[['x']][ipick], yend = .data[['y']][ipick]),
+               curvature = 0.1, arrow = arrow(length = unit(0.03, "npc"))) 
+```
+Finally, we move our guess by a small amount to minimize the error.
+```{r}
+#| echo: false
+# we save this behind the scenes only for comparison plotting 
+previous_guess <- current_guess_at_slope
+```
+```{r}
+alpha <- 0.001
+current_guess_at_slope <- current_guess_at_slope - alpha * delta * slope_df[['x']][ipick]
+```
+
+Here, the old guess is marked by a dashed line. Our step is probably too big but here I made `alpha` largish to make seeing the difference easier.
+```{r}
+#| echo: false
+ggplot(slope_df, aes(x = x, y = y)) +
+  geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+  geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
+  geom_abline(slope = previous_guess, color = "orange", intercept = 0, linetype = "dashed") +
+  geom_point() +
+  geom_point(aes(x = .data[['x']][ipick], y = .data[['y']][ipick]), color = "red") 
+```
+## SDG over all points and many epochs
+```{r}
+#| eval: false
+
+# learning rate
+alpha <- 0.0001
+
+# generate a random initial guess about the mean
+set.seed(8739172)
+current_guess_at_slope <- rnorm(1, sd = 10)
+
+for(epoch in 1:30){
+  total_error <- 0
+  for(ipick in 1:nrow(slope_df)){
+    
+    # computing squared error and difference
+    prediction <- current_guess_at_slope * slope_df[['x']][ipick]
+    error <- (prediction - slope_df[['y']][ipick])^2
+    total_error <- total_error + error
+    delta <- prediction - slope_df[['y']][ipick]
+    
+    # adjusting our guess
+    current_guess_at_slope <- current_guess_at_slope - alpha * delta * slope_df[['x']][ipick]
+  }
+  # computing and reporting error
+  cat(glue::glue("Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample slope: {round(sample_slope, 2)}"), "\n")
+}
+```
+
+```{r}
+#| eval: false
+#| echo: false
+#| message: false
+#| warning: false
+library(av)
+
+generate_sdg_plots <- function(epochs_n = 1){
+  # learning rate
+alpha <- 0.0001
+
+# generate a random initial guess about the mean
+set.seed(8739172)
+current_guess_at_slope <- rnorm(1, sd = 10)
+
+for(epoch in 1:epochs_n){
+  total_error <- 0
+  for(ipick in 1:nrow(slope_df)){
+      # computing squared error and difference
+      prediction <- current_guess_at_slope * slope_df[['x']][ipick]
+      error <- (prediction - slope_df[['y']][ipick])^2
+      delta <- prediction - slope_df[['y']][ipick]
+      
+      total_prediction <- current_guess_at_slope * slope_df[['x']]
+      total_error <- (total_prediction - slope_df[['y']])^2
+      
+      # adjusting our guess
+      current_guess_at_slope <- current_guess_at_slope - alpha * delta * slope_df[['x']][ipick]
+      
+      dot_curvature <- - 0.1 * sign(delta * slope_df[['x']][ipick])
+      slope_plot <- 
+        ggplot(slope_df, aes(x = x, y = y)) +
+        geom_abline(slope = sample_slope, color = "black", intercept = 0) +
+        geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
+        geom_point() +
+        geom_point(aes(x = .data[['x']][ipick], y = .data[['y']][ipick]), color = "red") +
+        geom_curve(aes(x = .data[['x']][ipick], y = prediction, xend = .data[['x']][ipick], yend = .data[['y']][ipick]),
+                     curvature = 0.1, arrow = arrow(length = unit(0.03, "npc"))) +
+        labs(subtitle = glue::glue("Epoch/Point: {epoch}/{ipick}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample mean: {round(sample_slope, 2)}"))
+      
+      print(slope_plot)
+    }
+  }
+}
+
+video_file <- fs::path('videos', 'finding-slope-via-sgd.mp4')
+av::av_capture_graphics(generate_sdg_plots(30), video_file, 1280, 720, res = 144, framerate=15)
+```
+{{< video videos/finding-mean-via-sgd.mp4 >}}

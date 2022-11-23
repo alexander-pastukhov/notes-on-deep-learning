@@ -220,22 +220,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">y =</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>))</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>means_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">the_mean =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">mean</span>(normal_df<span class="sc">$</span>y)),</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Kind of mean"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"True mean"</span>, <span class="st">"Sample mean"</span>))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> normal_df, <span class="fu">aes</span>(<span class="at">x =</span> y)) <span class="sc">+</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="sc">+</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">data =</span> means_df, <span class="fu">aes</span>(<span class="at">xintercept =</span> the_mean, <span class="at">color =</span> <span class="st">`</span><span class="at">Kind of mean</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"Kind of mean"</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"True mean"</span>, <span class="st">"Sample mean"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="672"></p>
+<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>To visualize our stochastic gradient descent, it is better to plot each data point as a point and our means as horizontal lines. Note, that this is just a different representation and x-axis has no meaning beyond spreading the dots horizontally.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> normal_df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="st">`</span><span class="at">data point index</span><span class="st">`</span>, <span class="at">y =</span> y)) <span class="sc">+</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">data =</span> means_df, <span class="fu">aes</span>(<span class="at">yintercept =</span> the_mean, <span class="at">color =</span> <span class="st">`</span><span class="at">Kind of mean</span><span class="st">`</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
@@ -243,29 +238,29 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 data-number="1.2" class="anchored" data-anchor-id="sdg-step-by-step"><span class="header-section-number">1.2</span> SDG step by step</h2>
 <p>First, we make a random guess about the mean.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">873917234</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>current_guess_at_mean <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">873917234</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>current_guess_at_mean <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.</p>
+<p>It is visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Next we pick a first (or, it could be random) data point and compute difference between it and our guess about the mean.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pick a random data point</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ipick <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># computing squared error and difference</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>error <span class="ot">&lt;-</span> (current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>delta <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pick a random data point</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ipick <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># computing squared error and difference</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>error <span class="ot">&lt;-</span> (current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>delta <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The difference and the direction in which we need to adjust our guess are depicted as the arrow.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Finally, we move our guess by a small amount to minimize the error</p>
@@ -273,93 +268,40 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>current_guess_at_mean <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> alpha <span class="sc">*</span> delta</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>current_guess_at_mean <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> alpha <span class="sc">*</span> delta</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Here, the old guess is marked by a dashed line. Our step is probably too big but here I made <code>alpha</code> largish to make seeing the differnce easier.</p>
+<p>Here, the old guess is marked by a dashed line. Our step is probably too big but here I made <code>alpha</code> largish to make seeing the difference easier.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<p><img src="01-sgd-mean_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
 <section id="sdg-over-all-points-and-many-epochs" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="sdg-over-all-points-and-many-epochs"><span class="header-section-number">1.3</span> SDG over all points and many epochs</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># learning rate</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.005</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">873917234</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>current_guess_at_mean <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">3</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(epoch <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>){</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  total_error <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(ipick <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(normal_df)){</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># computing squared error and difference</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    error <span class="ot">&lt;-</span> (current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    total_error <span class="ot">&lt;-</span> total_error <span class="sc">+</span> error</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    delta <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick]</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># adjusting our guess</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    current_guess_at_mean <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> alpha <span class="sc">*</span> delta</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># computing and reporting error</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\r</span><span class="st">"</span>, glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_mean, 2)}. Sample mean: {round(mean(normal_df[['y']]), 2)}"</span>))</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
- Epoch: 1. Error: 401.2. Estimate: -3.44. Sample mean: -0.17
- Epoch: 2. Error: 303.9. Estimate: -2.99. Sample mean: -0.17
- Epoch: 3. Error: 231.8. Estimate: -2.6. Sample mean: -0.17
- Epoch: 4. Error: 178.4. Estimate: -2.26. Sample mean: -0.17
- Epoch: 5. Error: 138.9. Estimate: -1.97. Sample mean: -0.17
- Epoch: 6. Error: 109.5. Estimate: -1.72. Sample mean: -0.17
- Epoch: 7. Error: 87.8. Estimate: -1.51. Sample mean: -0.17
- Epoch: 8. Error: 71.7. Estimate: -1.32. Sample mean: -0.17
- Epoch: 9. Error: 59.7. Estimate: -1.16. Sample mean: -0.17
- Epoch: 10. Error: 50.9. Estimate: -1.03. Sample mean: -0.17
- Epoch: 11. Error: 44.3. Estimate: -0.91. Sample mean: -0.17
- Epoch: 12. Error: 39.4. Estimate: -0.81. Sample mean: -0.17
- Epoch: 13. Error: 35.8. Estimate: -0.72. Sample mean: -0.17
- Epoch: 14. Error: 33.1. Estimate: -0.65. Sample mean: -0.17
- Epoch: 15. Error: 31.1. Estimate: -0.58. Sample mean: -0.17
- Epoch: 16. Error: 29.6. Estimate: -0.53. Sample mean: -0.17
- Epoch: 17. Error: 28.5. Estimate: -0.48. Sample mean: -0.17
- Epoch: 18. Error: 27.7. Estimate: -0.44. Sample mean: -0.17
- Epoch: 19. Error: 27. Estimate: -0.4. Sample mean: -0.17
- Epoch: 20. Error: 26.6. Estimate: -0.37. Sample mean: -0.17
- Epoch: 21. Error: 26.2. Estimate: -0.35. Sample mean: -0.17
- Epoch: 22. Error: 26. Estimate: -0.32. Sample mean: -0.17
- Epoch: 23. Error: 25.8. Estimate: -0.31. Sample mean: -0.17
- Epoch: 24. Error: 25.6. Estimate: -0.29. Sample mean: -0.17
- Epoch: 25. Error: 25.5. Estimate: -0.27. Sample mean: -0.17
- Epoch: 26. Error: 25.4. Estimate: -0.26. Sample mean: -0.17
- Epoch: 27. Error: 25.4. Estimate: -0.25. Sample mean: -0.17
- Epoch: 28. Error: 25.3. Estimate: -0.24. Sample mean: -0.17
- Epoch: 29. Error: 25.3. Estimate: -0.23. Sample mean: -0.17
- Epoch: 30. Error: 25.3. Estimate: -0.23. Sample mean: -0.17
- Epoch: 31. Error: 25.2. Estimate: -0.22. Sample mean: -0.17
- Epoch: 32. Error: 25.2. Estimate: -0.22. Sample mean: -0.17
- Epoch: 33. Error: 25.2. Estimate: -0.21. Sample mean: -0.17
- Epoch: 34. Error: 25.2. Estimate: -0.21. Sample mean: -0.17
- Epoch: 35. Error: 25.2. Estimate: -0.21. Sample mean: -0.17
- Epoch: 36. Error: 25.2. Estimate: -0.2. Sample mean: -0.17
- Epoch: 37. Error: 25.2. Estimate: -0.2. Sample mean: -0.17
- Epoch: 38. Error: 25.2. Estimate: -0.2. Sample mean: -0.17
- Epoch: 39. Error: 25.2. Estimate: -0.2. Sample mean: -0.17
- Epoch: 40. Error: 25.2. Estimate: -0.2. Sample mean: -0.17
- Epoch: 41. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 42. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 43. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 44. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 45. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 46. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 47. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 48. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 49. Error: 25.2. Estimate: -0.19. Sample mean: -0.17
- Epoch: 50. Error: 25.2. Estimate: -0.19. Sample mean: -0.17</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># learning rate</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.005</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">873917234</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>current_guess_at_mean <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">3</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(epoch <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">50</span>){</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  total_error <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(ipick <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(normal_df)){</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># computing squared error and difference</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    error <span class="ot">&lt;-</span> (current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    total_error <span class="ot">&lt;-</span> total_error <span class="sc">+</span> error</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    delta <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> normal_df[[<span class="st">'y'</span>]][ipick]</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># adjusting our guess</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    current_guess_at_mean <span class="ot">&lt;-</span> current_guess_at_mean <span class="sc">-</span> alpha <span class="sc">*</span> delta</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># computing and reporting error</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\r</span><span class="st">"</span>, glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_mean, 2)}. Sample mean: {round(mean(normal_df[['y']]), 2)}"</span>))</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 
