@@ -1,0 +1,177 @@
+# Stochastic Gradient Descent for a mean
+
+As a first example, we will use stochastic gradient descent (SDG) to estimate the mean of a set of values. 
+
+## Generate normally distributed data
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+
+set.seed(128230565)
+n <- 30
+normal_df <- tibble(`data point index` = 1:n,
+                    y = rnorm(n, mean = 0, sd = 1))
+
+means_df <- tibble(the_mean = c(0, mean(normal_df$y)),
+                   "Kind of mean" = c("True mean", "Sample mean"))
+  
+ggplot(data = normal_df, aes(x = y)) +
+  geom_histogram(bins = 10) +
+  geom_vline(data = means_df, aes(xintercept = the_mean, color = `Kind of mean`))
+```
+
+To visualize our stochastic gradient descent, it is better to plot each data point as a point and our means as horizontal lines. Note, that this is just a different representation and x-axis has no meaning beyond spreading the dots horizontally.
+
+```{r}
+ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+  geom_point() +
+  geom_hline(data = means_df, aes(yintercept = the_mean, color = `Kind of mean`))
+```
+
+## SDG step by step
+
+First, we make a random guess about the mean.
+```{r}
+# generate a random initial guess about the mean
+set.seed(873917234)
+current_guess_at_mean <- rnorm(1, sd = 3)
+```
+
+In  visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.
+```{r}
+#| echo: false
+ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+  geom_hline(aes(yintercept = mean(.data$y)), color = "black") +
+  geom_hline(yintercept = current_guess_at_mean, color = "orange") +
+  geom_point() +
+  ylim(-4, 1.5)
+```
+
+Next we pick a first (or, it could be random) data point and compute difference between it and our guess about the mean.
+```{r}
+# pick a random data point
+ipick <- 1
+
+# computing squared error and difference
+error <- (current_guess_at_mean - normal_df[['y']][ipick])^2
+delta <- current_guess_at_mean - normal_df[['y']][ipick]
+```
+
+The difference and the direction in which we need to adjust our guess are depicted as the arrow.
+```{r}
+#| echo: false
+ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+  geom_hline(aes(yintercept = mean(.data$y)), color = "black") +
+  geom_hline(yintercept = current_guess_at_mean, color = "orange") +
+  geom_point() +
+  geom_point(aes(x = .data[['data point index']][ipick], y = .data[['y']][ipick]), color = "red") +
+  geom_segment(aes(x = .data[["data point index"]][ipick], y = current_guess_at_mean,
+                   xend = .data[["data point index"]][ipick], yend = .data[['y']][ipick]),  arrow = arrow(length = unit(0.03, "npc"))) +
+  ylim(-4, 1.5)
+```
+Finally, we move our guess by a small amount to minimize the error
+```{r}
+#| echo: false
+# we save this behind the scenes only for comparison plotting 
+previous_guess <- current_guess_at_mean
+```
+```{r}
+alpha <- 0.05
+current_guess_at_mean <- current_guess_at_mean - alpha * delta
+```
+
+Here, the old guess is marked by a dashed line. Our step is probably too big but here I made `alpha` largish to make seeing the differnce easier.
+```{r}
+#| echo: false
+ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+  geom_hline(aes(yintercept = mean(.data$y)), color = "black") +
+  geom_hline(yintercept = current_guess_at_mean, color = "orange") +
+  geom_hline(yintercept = previous_guess, color = "orange", linetype = "dashed") +
+  geom_point() +
+  geom_point(aes(x = .data[['data point index']][ipick], y = .data[['y']][ipick]), color = "red") +
+  ylim(-4, 1.5)
+```
+
+## SDG over all points and many epochs
+
+```{r}
+#| eval: false
+
+# learning rate
+alpha <- 0.005
+
+# generate a random initial guess about the mean
+set.seed(873917234)
+current_guess_at_mean <- rnorm(1, sd = 3)
+
+for(epoch in 1:50){
+  total_error <- 0
+  for(ipick in 1:nrow(normal_df)){
+    # computing squared error and difference
+    error <- (current_guess_at_mean - normal_df[['y']][ipick])^2
+    total_error <- total_error + error
+    delta <- current_guess_at_mean - normal_df[['y']][ipick]
+    
+    # adjusting our guess
+    current_guess_at_mean <- current_guess_at_mean - alpha * delta
+  }
+  # computing and reporting error
+  cat("\r", glue::glue("Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_mean, 2)}. Sample mean: {round(mean(normal_df[['y']]), 2)}"))
+}
+```
+
+```{r}
+#| eval: false
+#| echo: false
+#| message: false
+#| warning: false
+
+library(av)
+library(progress)
+
+generate_sdg_plots <- function(epochs_n = 1){
+  # learning rate
+  alpha <- 0.005
+  
+  # generate a random initial guess about the mean
+  set.seed(873917234)
+  current_guess_at_mean <- rnorm(1, sd = 3)
+  
+  pbar <- progress::progress_bar$new(format = "[:bar] :eta", total = epochs_n * nrow(normal_df))
+  for(epoch in 1:epochs_n){
+    total_error <- 0
+    for(ipick in 1:nrow(normal_df)){
+      pbar$tick()
+      
+      # computing squared error and difference
+      error <- (current_guess_at_mean - normal_df[['y']][ipick])^2
+      total_error <- sum((current_guess_at_mean - normal_df[['y']])^2)
+      delta <- current_guess_at_mean - normal_df[['y']][ipick]
+      
+      # adjusting our guess
+      current_guess_at_mean <- current_guess_at_mean - alpha * delta
+      
+      # show delta
+      sgd_plot <- ggplot(data = normal_df, aes(x = `data point index`, y = y)) +
+        geom_hline(aes(yintercept = mean(.data$y)), color = "black") +
+        geom_hline(yintercept = current_guess_at_mean, color = "orange") +
+        geom_point() +
+        geom_point(aes(x = .data[['data point index']][ipick], y = .data[['y']][ipick]), color = "red") +
+        geom_segment(aes(x = .data[["data point index"]][ipick], y = current_guess_at_mean,
+                         xend = .data[["data point index"]][ipick], yend = .data[['y']][ipick]),  arrow = arrow(length = unit(0.03, "npc"))) +
+        ylim(-4, 1.5) +
+        labs(subtitle = glue::glue("Epoch/Point: {epoch}/{ipick}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_mean, 2)}. Sample mean: {round(mean(normal_df[['y']]), 2)}"))
+      
+      print(sgd_plot)
+    }
+  }
+}
+
+
+video_file <- fs::path('videos', 'finding-mean-via-sgd.mp4')
+av::av_capture_graphics(generate_sdg_plots(50), video_file, 1280, 720, res = 144, framerate=15)
+```
+
+{{< video videos/finding-mean-via-sgd.mp4 >}}
