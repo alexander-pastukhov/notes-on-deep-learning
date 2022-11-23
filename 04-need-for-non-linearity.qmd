@@ -1,0 +1,24 @@
+# Need for non-linearity
+
+Generate three linear relationships that combine into a non-monotonic one.
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+
+nonlinear_data <- dplyr::bind_rows(
+  tibble(x = 1:5, y = rnorm(5, 6 * x, sd = 0.5), label = "A"),
+  tibble(x = 6:20, y = rnorm(15, 36 + -1 * x, sd = 0.5), label = "B"),
+  tibble(x = 21:25, y = rnorm(5, 36 - 21 + 2 * (x - 21), sd = 0.5), label = "C")
+)
+
+ggplot(nonlinear_data, aes(x = x, y = y)) +
+  geom_point()
+```
+
+There is no good way to fit this relationship using a single linear model. But what if we fit _three_ linear models in the hidden layer?
+
+```{r}
+
+
+```
