@@ -4,14 +4,7 @@
     "href": "index.html",
     "title": "Notes on Deep Learning",
     "section": "",
-    "text": "These are companion notes for a deep learning seminar."
-  },
-  {
-    "objectID": "01-sgd-mean.html",
-    "href": "01-sgd-mean.html",
-    "title": "1  Stochastic Gradient Descent for a mean",
-    "section": "",
-    "text": "As a first example, we will use stochastic gradient descent (SDG) to estimate the mean of a set of values."
+    "text": "Preface\nThese are companion notes for a deep learning seminar."
   },
   {
     "objectID": "01-sgd-mean.html#generate-normally-distributed-data",
@@ -35,11 +28,11 @@
     "text": "1.3 SDG over all points and many epochs\n\n# learning rate\nalpha <- 0.005\n\n# generate a random initial guess about the mean\nset.seed(873917234)\ncurrent_guess_at_mean <- rnorm(1, sd = 3)\n\nfor(epoch in 1:50){\n  total_error <- 0\n  for(ipick in 1:nrow(normal_df)){\n    # computing squared error and difference\n    error <- (current_guess_at_mean - normal_df[['y']][ipick])^2\n    total_error <- total_error + error\n    delta <- current_guess_at_mean - normal_df[['y']][ipick]\n    \n    # adjusting our guess\n    current_guess_at_mean <- current_guess_at_mean - alpha * delta\n  }\n  # computing and reporting error\n  cat(\"\\r\", glue::glue(\"Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_mean, 2)}. Sample mean: {round(mean(normal_df[['y']]), 2)}\"))\n}"
   },
   {
-    "objectID": "02-sgd-slope.html",
-    "href": "02-sgd-slope.html",
+    "objectID": "02-sgd-slope.html#generate-data-distributed-normally-relative-to-the-slope",
+    "href": "02-sgd-slope.html#generate-data-distributed-normally-relative-to-the-slope",
     "title": "2  Stochastic Gradient Descent for slope",
-    "section": "",
-    "text": "library(tidyverse)\n\nset.seed(128230565)\nx_range <- c(-15, 15)\nslope <- 3\nslope_df <- \n  tibble(x = x_range[1]:x_range[2]) %>%\n  mutate(y = rnorm(n(), mean = x * slope, sd = 10))\n\nHere is the dependence visualized with the blue line representing a true slope and the red line — the sample slope."
+    "section": "2.1 Generate data distributed normally relative to the slope",
+    "text": "2.1 Generate data distributed normally relative to the slope\n\nlibrary(tidyverse)\n\nset.seed(128230565)\nx_range <- c(-15, 15)\nslope <- 3\nslope_df <- \n  tibble(x = x_range[1]:x_range[2]) %>%\n  mutate(y = rnorm(n(), mean = x * slope, sd = 10))\n\nHere is the dependence visualized with the blue line representing a true slope and the red line — the sample slope."
   },
   {
     "objectID": "02-sgd-slope.html#direction-of-adjusment-based-on-difference-and-input",
