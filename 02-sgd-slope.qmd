@@ -148,9 +148,11 @@ current_guess_at_slope <- rnorm(1, sd = 10)
 for(epoch in 1:30){
   total_error <- 0
   for(ipick in 1:nrow(slope_df)){
-    
-    # computing squared error and difference
+
+    # prediction from our neural network model
     prediction <- current_guess_at_slope * slope_df[['x']][ipick]
+
+    # computing squared error and difference
     error <- (prediction - slope_df[['y']][ipick])^2
     total_error <- total_error + error
     delta <- prediction - slope_df[['y']][ipick]

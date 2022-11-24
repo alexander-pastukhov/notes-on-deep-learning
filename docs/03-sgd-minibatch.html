@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Notes on Deep Learning - 3&nbsp; Stochastic Gradient Descent for slope</title>
+<title>Notes on Deep Learning - 4&nbsp; Visualizing Minibatch Stochastic Gradient Descent for slope</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -93,8 +93,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./03-sgd-minibatch.html" rel="next">
-<link href="./01-sgd-mean.html" rel="prev">
+<link href="./02-sgd-slope.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -135,7 +134,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Stochastic Gradient Descent for slope</span></h1>
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Visualizing Minibatch Stochastic Gradient Descent for slope</span></h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -170,12 +169,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02-sgd-slope.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Stochastic Gradient Descent for slope</span></a>
+  <a href="./02-sgd-slope.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Stochastic Gradient Descent for slope</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./03-sgd-minibatch.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Visualizing Minibatch Stochastic Gradient Descent for slope</span></a>
+  <a href="./03-sgd-minibatch.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Visualizing Minibatch Stochastic Gradient Descent for slope</span></a>
   </div>
 </li>
     </ul>
@@ -187,10 +186,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#generate-data-distributed-normally-relative-to-the-slope" id="toc-generate-data-distributed-normally-relative-to-the-slope" class="nav-link active" data-scroll-target="#generate-data-distributed-normally-relative-to-the-slope"><span class="toc-section-number">3.1</span>  Generate data distributed normally relative to the slope</a></li>
-  <li><a href="#direction-of-adjusment-based-on-difference-and-input" id="toc-direction-of-adjusment-based-on-difference-and-input" class="nav-link" data-scroll-target="#direction-of-adjusment-based-on-difference-and-input"><span class="toc-section-number">3.2</span>  Direction of adjusment based on difference and input</a></li>
-  <li><a href="#sdg-step-by-step" id="toc-sdg-step-by-step" class="nav-link" data-scroll-target="#sdg-step-by-step"><span class="toc-section-number">3.3</span>  SDG step by step</a></li>
-  <li><a href="#sdg-over-all-points-and-many-epochs" id="toc-sdg-over-all-points-and-many-epochs" class="nav-link" data-scroll-target="#sdg-over-all-points-and-many-epochs"><span class="toc-section-number">3.4</span>  SDG over all points and many epochs</a></li>
+  <li><a href="#generate-data-distributed-normally-relative-to-the-slope" id="toc-generate-data-distributed-normally-relative-to-the-slope" class="nav-link active" data-scroll-target="#generate-data-distributed-normally-relative-to-the-slope"><span class="toc-section-number">4.1</span>  Generate data distributed normally relative to the slope</a></li>
+  <li><a href="#sdg-step-by-step" id="toc-sdg-step-by-step" class="nav-link" data-scroll-target="#sdg-step-by-step"><span class="toc-section-number">4.2</span>  SDG step by step</a></li>
+  <li><a href="#sdg-over-all-points-and-many-epochs" id="toc-sdg-over-all-points-and-many-epochs" class="nav-link" data-scroll-target="#sdg-over-all-points-and-many-epochs"><span class="toc-section-number">4.3</span>  SDG over all points and many epochs</a></li>
   </ul>
 </nav>
     </div>
@@ -199,7 +197,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Stochastic Gradient Descent for slope</span></h1>
+<h1 class="title d-none d-lg-block"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Visualizing Minibatch Stochastic Gradient Descent for slope</span></h1>
 </div>
 
 
@@ -214,35 +212,27 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<section id="generate-data-distributed-normally-relative-to-the-slope" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="generate-data-distributed-normally-relative-to-the-slope"><span class="header-section-number">3.1</span> Generate data distributed normally relative to the slope</h2>
+<section id="generate-data-distributed-normally-relative-to-the-slope" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="generate-data-distributed-normally-relative-to-the-slope"><span class="header-section-number">4.1</span> Generate data distributed normally relative to the slope</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">128230565</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x_range <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">15</span>, <span class="dv">15</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x_range <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">15</span>, <span class="dv">14</span>)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>slope <span class="ot">&lt;-</span> <span class="dv">3</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>slope_df <span class="ot">&lt;-</span> </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>slope_df <span class="ot">&lt;-</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">x =</span> x_range[<span class="dv">1</span>]<span class="sc">:</span>x_range[<span class="dv">2</span>]) <span class="sc">%&gt;%</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">y =</span> <span class="fu">rnorm</span>(<span class="fu">n</span>(), <span class="at">mean =</span> x <span class="sc">*</span> slope, <span class="at">sd =</span> <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here is the dependence visualized with the blue line representing a true slope and the red line — the sample slope.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="02-sgd-slope_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+<p><img src="03-sgd-minibatch_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="direction-of-adjusment-based-on-difference-and-input" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="direction-of-adjusment-based-on-difference-and-input"><span class="header-section-number">3.2</span> Direction of adjusment based on difference and input</h2>
-<div class="cell">
-<div class="cell-output-display">
-<p><img src="02-sgd-slope_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
-</div>
-</div>
-</section>
-<section id="sdg-step-by-step" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="sdg-step-by-step"><span class="header-section-number">3.3</span> SDG step by step</h2>
+<section id="sdg-step-by-step" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="sdg-step-by-step"><span class="header-section-number">4.2</span> SDG step by step</h2>
 <p>First, we make a random guess about the slope.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
@@ -252,23 +242,26 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>It is visualized as an orange line, whereas the sample mean (not the true sampling distribution mean!) is black.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="02-sgd-slope_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+<p><img src="03-sgd-minibatch_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Next we pick a first (or, it could be random) data point and compute difference between it and our guess about the mean.</p>
+<p>Next we pick a first batch of 5 points and compute difference between it and our guess about the mean.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pick a random data point</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ipick <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># computing squared error and difference</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>prediction <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick]</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>error <span class="ot">&lt;-</span> (prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>delta <span class="ot">&lt;-</span> prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>batch_size <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ipick <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># that's our neural network</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>prediction <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick] </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># computing squared error and difference</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>error <span class="ot">&lt;-</span> (prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>delta <span class="ot">&lt;-</span> prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The difference and the direction in which we need to adjust our guess are depicted as the arrow.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="02-sgd-slope_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+<p><img src="03-sgd-minibatch_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Finally, we move our guess by a small amount to minimize the error.</p>
@@ -276,49 +269,52 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.001</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>current_guess_at_slope <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">-</span> alpha <span class="sc">*</span> delta <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.001</span> <span class="sc">/</span> batch_size <span class="co"># we need a smaller step as it reflects delta * input accumulated over batch_size points</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>current_guess_at_slope <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">-</span> alpha <span class="sc">*</span> <span class="fu">sum</span>(delta <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here, the old guess is marked by a dashed line. Our step is probably too big but here I made <code>alpha</code> largish to make seeing the difference easier.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="02-sgd-slope_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<p><img src="03-sgd-minibatch_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="sdg-over-all-points-and-many-epochs" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="sdg-over-all-points-and-many-epochs"><span class="header-section-number">3.4</span> SDG over all points and many epochs</h2>
+<section id="sdg-over-all-points-and-many-epochs" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="sdg-over-all-points-and-many-epochs"><span class="header-section-number">4.3</span> SDG over all points and many epochs</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># learning rate</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.0001</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">8739172</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>current_guess_at_slope <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># mini batch size</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>batch_size <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>batches_n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(slope_df) <span class="sc">/</span> batch_size</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># learning rate</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.0001</span>  <span class="co"># we need a smaller step as it reflects delta * input accumulated over batch_size points</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(epoch <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>){</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  total_error <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(ipick <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(slope_df)){</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a random initial guess about the mean</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">8739172</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>current_guess_at_slope <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prediction from our neural network model</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    prediction <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick]</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># computing squared error and difference</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    error <span class="ot">&lt;-</span> (prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    total_error <span class="ot">&lt;-</span> total_error <span class="sc">+</span> error</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    delta <span class="ot">&lt;-</span> prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick]</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># adjusting our guess</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    current_guess_at_slope <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">-</span> alpha <span class="sc">*</span> delta <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick]</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># computing and reporting error</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample slope: {round(sample_slope, 2)}"</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(epoch <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>){</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  total_error <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(ibatch <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>batches_n){</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    ipick <span class="ot">&lt;-</span> ((ibatch <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">*</span> batch_size <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">:</span> (ibatch <span class="sc">*</span> batch_size)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># computing squared error and difference</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    prediction <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick]</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    error <span class="ot">&lt;-</span> (prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick])<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    total_error <span class="ot">&lt;-</span> total_error <span class="sc">+</span> <span class="fu">sum</span>(error)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    delta <span class="ot">&lt;-</span> prediction <span class="sc">-</span> slope_df[[<span class="st">'y'</span>]][ipick]</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># adjusting our guess</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    current_guess_at_slope <span class="ot">&lt;-</span> current_guess_at_slope <span class="sc">-</span> alpha <span class="sc">*</span> <span class="fu">sum</span>(delta <span class="sc">*</span> slope_df[[<span class="st">'x'</span>]][ipick])</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># computing and reporting error</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Epoch: {epoch}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample slope: {round(sample_slope, 2)}"</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 
 </div>
-<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="videos/finding-slope-via-sgd.mp4"></video></div>
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="videos/finding-slope-via-minibatch-sgd.mp4"></video></div>
 
 
 </section>
@@ -459,14 +455,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./01-sgd-mean.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Stochastic Gradient Descent for a mean</span></span>
+      <a href="./02-sgd-slope.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Stochastic Gradient Descent for slope</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./03-sgd-minibatch.html" class="pagination-link">
-        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Visualizing Minibatch Stochastic Gradient Descent for slope</span></span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->

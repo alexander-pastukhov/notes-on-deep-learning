@@ -9,6 +9,7 @@ book:
     - index.qmd
     - 01-sgd-mean.qmd
     - 02-sgd-slope.qmd
+    - 03-sgd-minibatch.qmd
 
 # bibliography: references.bib
 
