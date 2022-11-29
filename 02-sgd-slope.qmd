@@ -70,6 +70,24 @@ for(iC in 1:length(conditions)){
 (example_plots[[1]] + example_plots[[2]])  / (example_plots[[3]] + example_plots[[4]])
 ```
 
+Thus, the solution is to multiply the delta by input, which also serves to modulate it. The logic is that since the error depends on the product of weight and inputs, higher input means that it contributes more to the error and so must be corrected more aggressively, whereas a small input contributes little and its adjustment should be equally small.
+
+## Weight delta logic via derivatives
+
+The logic of computing the adjustment above is an illustrative way of understanding how a change in weight would propagate into a change in error. In other words, we are interested if we change weight by a small amount $dw$ what would be the change in error $dL_2$. This is a definition of a _derivative_ and is written as $dL_2/dw$. On the one hand, computing this derivative is not particularly easy, as our error is a function of a loss $L2()$ which is a function of activation $L2(\sigma())$ which is a function of a linear weighted sum function $L2(\sigma(f_{wsum}(x, w)))$.
+
+On the other hand, nesting is a simple case because we can use a chain rule. If you have $f1(f2(x))$ then 
+
+$$\frac{df1}{dx} = \frac{df1}{df2} \frac{df2}{dx}$$
+
+In our case 
+$$L2 = (y - \sigma(wx))^2$$
+
+$$ L_2 = ()^2 ← \sigma() ← wx $$
+
+$$\frac{d}{dx} x^n = n x^{n-1}$$
+
+$$\frac{d}{dx} x^n = n x^{n-1}$$
 
 ## SDG step by step
 
@@ -89,7 +107,13 @@ ggplot(slope_df, aes(x = x, y = y)) +
   geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0)
 ```
 
-Next we pick a first (or, it could be random) data point and compute difference between it and our guess about the mean.
+Next we pick a first (or, it could be random) data point and compute difference between it and our guess about the mean. Note that delta is only a part of derivative. Our formula for quadratic loss is 
+$$L2 = (wx - y)^2 = w^2x^2 - 2wxy+y^2$$
+
+the derivative with respect to the weight is 
+
+$$\frac{dL2}{dx} = 2x^2w - 2xy = 2x (wx - y)$$ 
+
 ```{r}
 # pick a random data point
 ipick <- 1
@@ -112,6 +136,21 @@ ggplot(slope_df, aes(x = x, y = y)) +
   geom_curve(aes(x = .data[['x']][ipick], y = prediction, xend = .data[['x']][ipick], yend = .data[['y']][ipick]),
                curvature = 0.1, arrow = arrow(length = unit(0.03, "npc"))) 
 ```
+
+```{r}
+#| echo: false
+deriv_slope <- 2 * slope_df[['x']][ipick] * (current_guess_at_slope * slope_df[['x']][ipick] - slope_df[['y']][ipick])
+deriv_intercept <-  (slope_df[['y']][ipick] - current_guess_at_slope * slope_df[['x']][ipick])^2 - deriv_slope * current_guess_at_slope
+
+tibble(Slope = seq(-20, 20, length.out = 100),
+       Error = ( Slope * slope_df[['x']][ipick] - slope_df[['y']][ipick])^2) %>%
+  ggplot(aes(x = Slope, y = Error)) +
+  geom_line() + 
+  geom_point(x = current_guess_at_slope, y = (slope_df[['y']][ipick] - current_guess_at_slope * slope_df[['x']][ipick])^2, color = "orange") +
+  geom_abline(intercept = deriv_intercept,
+              slope = deriv_slope)
+```
+
 Finally, we move our guess by a small amount to minimize the error.
 ```{r}
 #| echo: false

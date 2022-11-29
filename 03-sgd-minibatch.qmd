@@ -68,6 +68,11 @@ ggplot(slope_df, aes(x = x, y = y)) +
   geom_point(data =  slope_df[ipick, ], color = "red") +
   geom_curve(data = NULL, x = mean(slope_df[['x']][ipick]), y = mean(prediction), xend = mean(slope_df[['x']][ipick]), yend = mean(slope_df[['y']][ipick]), curvature = 0.1, arrow = arrow(length = unit(0.03, "npc")))
 ```
+
+```{r}
+
+```
+
 Finally, we move our guess by a small amount to minimize the error.
 ```{r}
 #| echo: false
