@@ -72,6 +72,7 @@ for(iC in 1:length(conditions)){
 
 Thus, the solution is to multiply the delta by input, which also serves to modulate it. The logic is that since the error depends on the product of weight and inputs, higher input means that it contributes more to the error and so must be corrected more aggressively, whereas a small input contributes little and its adjustment should be equally small.
 
+
 ## Weight delta logic via derivatives
 
 The logic of computing the adjustment above is an illustrative way of understanding how a change in weight would propagate into a change in error. In other words, we are interested if we change weight by a small amount $dw$ what would be the change in error $dL_2$. This is a definition of a _derivative_ and is written as $dL_2/dw$. On the one hand, computing this derivative is not particularly easy, as our error is a function of a loss $L2()$ which is a function of activation $L2(\sigma())$ which is a function of a linear weighted sum function $L2(\sigma(f_{wsum}(x, w)))$.
@@ -170,7 +171,7 @@ ggplot(slope_df, aes(x = x, y = y)) +
   geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
   geom_abline(slope = previous_guess, color = "orange", intercept = 0, linetype = "dashed") +
   geom_point() +
-  geom_point(aes(x = .data[['x']][ipick], y = .data[['y']][ipick]), color = "red") 
+  geom_point(aes(x = .data[['x']][ipick], y = .data[['y']][ipick]), color = "red")
 ```
 
 ## SDG over all points and many epochs
@@ -213,15 +214,16 @@ library(av)
 
 generate_sdg_plots <- function(epochs_n = 1){
   # learning rate
-alpha <- 0.0001
+  alpha <- 0.0001
 
-# generate a random initial guess about the mean
-set.seed(8739172)
-current_guess_at_slope <- rnorm(1, sd = 10)
+  # generate a random initial guess about the mean
+  set.seed(8739172)
+  current_guess_at_slope <- rnorm(1, sd = 10)
 
-for(epoch in 1:epochs_n){
-  total_error <- 0
-  for(ipick in 1:nrow(slope_df)){
+  for(epoch in 1:epochs_n){
+    total_error <- 0
+    
+    for(ipick in 1:nrow(slope_df)){
       # computing squared error and difference
       prediction <- current_guess_at_slope * slope_df[['x']][ipick]
       error <- (prediction - slope_df[['y']][ipick])^2
@@ -234,7 +236,7 @@ for(epoch in 1:epochs_n){
       current_guess_at_slope <- current_guess_at_slope - alpha * delta * slope_df[['x']][ipick]
       
       dot_curvature <- - 0.1 * sign(delta * slope_df[['x']][ipick])
-      slope_plot <- 
+      slope_plot <-
         ggplot(slope_df, aes(x = x, y = y)) +
         geom_abline(slope = sample_slope, color = "black", intercept = 0) +
         geom_abline(slope = current_guess_at_slope, color = "orange", intercept = 0) +
@@ -244,7 +246,19 @@ for(epoch in 1:epochs_n){
                      curvature = dot_curvature, arrow = arrow(length = unit(0.03, "npc"))) +
         labs(subtitle = glue::glue("Epoch/Point: {epoch}/{ipick}. Error: {round(total_error, 1)}. Estimate: {round(current_guess_at_slope, 2)}. Sample mean: {round(sample_slope, 2)}"))
       
-      print(slope_plot)
+      deriv_slope <- 2 * slope_df[['x']][ipick] * (current_guess_at_slope * slope_df[['x']][ipick] - slope_df[['y']][ipick])
+      deriv_intercept <-  (slope_df[['y']][ipick] - current_guess_at_slope * slope_df[['x']][ipick])^2 - deriv_slope * current_guess_at_slope
+      
+      deriv_plot <-
+      tibble(Slope = seq(-20, 20, length.out = 100),
+             Error = ( Slope * slope_df[['x']][ipick] - slope_df[['y']][ipick])^2) %>%
+        ggplot(aes(x = Slope, y = Error)) +
+        geom_line() + 
+        geom_point(x = current_guess_at_slope, y = (slope_df[['y']][ipick] - current_guess_at_slope * slope_df[['x']][ipick])^2, color = "orange") +
+        geom_abline(intercept = deriv_intercept,
+                    slope = deriv_slope)      
+      
+      print(slope_plot + deriv_plot + plot_layout(widths = c(2, 1)))
     }
   }
 }
